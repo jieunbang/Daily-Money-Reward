@@ -1226,7 +1226,7 @@
       const earnedMoney = 20;
       const newTotal = totalMoney + earnedMoney;
       updateTotalMoney(newTotal); // 금액 롤링 즉시 시작
-      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500);
+      showToast(`${earnedMoney}원 적립완료! 🎉`, 800);
 
       // 3. 다음 카드가 앞으로 나옴 (각도 0도)
       if (nextCard) {
@@ -1294,7 +1294,7 @@
       openOneBtn.style.opacity = '0.5';
       openOneBtn.style.pointerEvents = 'none';
 
-      // 1. 모든 카드를 0도로 합치기 (앞면 상태 유지) + 보더 라이트 애니메이션
+      // 1. 모든 카드를 0도로 합치기 (앞면 상태 유지)
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
         // 카드 상태 초기화 - 앞면으로
@@ -1303,11 +1303,20 @@
         card.style.transition = 'transform 0.4s ease-out';
         card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(0deg)';
         card.classList.remove('flipped', 'merge-flip', 'flipping');
-        card.classList.add('merge', 'border-loading');
+        card.classList.add('merge');
       }
 
-      // 2초 동안 로딩 스피너 + 카드 앞면 유지 + 보더 라이트
-      await new Promise(r => setTimeout(r, 2000));
+      // 카드 합쳐지는 애니메이션 완료 대기
+      await new Promise(r => setTimeout(r, 500));
+
+      // 2. 보더 라이트 애니메이션 시작
+      for (let i = 1; i <= currentCardIndex; i++) {
+        const card = document.getElementById('card' + i);
+        card.classList.add('border-loading');
+      }
+
+      // 1.5초 동안 보더 라이트 애니메이션
+      await new Promise(r => setTimeout(r, 1500));
 
       // 2. 합쳐진 카드 한번에 플립 (보더 라이트 제거)
       for (let i = 1; i <= currentCardIndex; i++) {
@@ -1323,7 +1332,7 @@
       // 적립 처리 (모든 일반카드 금액)
       const totalEarned = mileageCount * 20;
       const newTotal = totalMoney + totalEarned;
-      showToast(`${totalEarned}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
+      showToast(`${totalEarned}원 적립완료! 🎉`, 800, () => updateTotalMoney(newTotal));
 
       // 카드 수 0으로
       updateCounts(specialCount, 0);
