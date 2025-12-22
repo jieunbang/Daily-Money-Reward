@@ -412,6 +412,57 @@
       border-radius: 8px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       backface-visibility: hidden;
+      overflow: hidden;
+    }
+
+    /* 카드 보더 라이트 애니메이션 */
+    .card-front::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 8px;
+      padding: 2px;
+      background: linear-gradient(90deg, transparent, transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flip-card.border-loading .card-front::before {
+      opacity: 1;
+      background: conic-gradient(
+        from var(--border-angle, 0deg),
+        transparent 0deg,
+        transparent 60deg,
+        rgba(255, 255, 255, 0.9) 90deg,
+        rgba(120, 200, 255, 1) 120deg,
+        rgba(255, 255, 255, 0.9) 150deg,
+        transparent 180deg,
+        transparent 360deg
+      );
+      animation: borderRotate 1.5s linear infinite;
+    }
+
+    @keyframes borderRotate {
+      0% {
+        --border-angle: 0deg;
+      }
+      100% {
+        --border-angle: 360deg;
+      }
+    }
+
+    /* CSS custom property animation support */
+    @property --border-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
     }
 
     /* Card Back (결과 카드) */
@@ -1243,7 +1294,7 @@
       openOneBtn.style.opacity = '0.5';
       openOneBtn.style.pointerEvents = 'none';
 
-      // 1. 모든 카드를 0도로 합치기 (앞면 상태 유지)
+      // 1. 모든 카드를 0도로 합치기 (앞면 상태 유지) + 보더 라이트 애니메이션
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
         // 카드 상태 초기화 - 앞면으로
@@ -1252,16 +1303,16 @@
         card.style.transition = 'transform 0.4s ease-out';
         card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(0deg)';
         card.classList.remove('flipped', 'merge-flip', 'flipping');
-        card.classList.add('merge');
+        card.classList.add('merge', 'border-loading');
       }
 
-      // 2초 동안 로딩 스피너 + 카드 앞면 유지
+      // 2초 동안 로딩 스피너 + 카드 앞면 유지 + 보더 라이트
       await new Promise(r => setTimeout(r, 2000));
 
-      // 2. 합쳐진 카드 한번에 플립
+      // 2. 합쳐진 카드 한번에 플립 (보더 라이트 제거)
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
-        card.classList.remove('merge');
+        card.classList.remove('merge', 'border-loading');
         card.style.transition = 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)';
         card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(180deg)';
         card.style.zIndex = '10';
