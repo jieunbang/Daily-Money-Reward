@@ -1243,28 +1243,28 @@
       openOneBtn.style.opacity = '0.5';
       openOneBtn.style.pointerEvents = 'none';
 
-      // 1. 모든 카드를 0도로 합치기 (상태 초기화 후)
+      // 1. 모든 카드를 0도로 합치기 (앞면 상태 유지)
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
-        // 카드 상태 초기화
+        // 카드 상태 초기화 - 앞면으로
         card.style.visibility = 'visible';
         card.style.opacity = '1';
         card.style.transition = 'transform 0.4s ease-out';
         card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(0deg)';
-        card.classList.remove('flipped', 'merge-flip');
+        card.classList.remove('flipped', 'merge-flip', 'flipping');
         card.classList.add('merge');
       }
 
-      await new Promise(r => setTimeout(r, 500));
+      // 2초 동안 로딩 스피너 + 카드 앞면 유지
+      await new Promise(r => setTimeout(r, 2000));
 
-      // 2. 합쳐진 카드 한번에 플립 (flipping 클래스 사용)
+      // 2. 합쳐진 카드 한번에 플립
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
         card.classList.remove('merge');
-        card.style.transform = '';
-        card.style.transition = '';
+        card.style.transition = 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)';
+        card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(180deg)';
         card.style.zIndex = '10';
-        card.classList.add('flipping');
       }
 
       await new Promise(r => setTimeout(r, 800));
