@@ -1162,8 +1162,8 @@
         updateCounts(specialCount, mileageCount - 1);
       }
 
-      // 플립된 카드 1.5초 동안 화면에 표시
-      await new Promise(r => setTimeout(r, 1500));
+      // 플립된 카드 2초 동안 화면에 표시
+      await new Promise(r => setTimeout(r, 2000));
 
       // ★ 마지막 카드인 경우 empty state 미리 표시 (카드 뒤에 배치되어 아직 안보임)
       if (mileageCount <= 0 && currentScenario === 'success') {
