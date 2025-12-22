@@ -355,17 +355,35 @@
       0% {
         transform: translate(-50%, -50%) scale(1) rotateY(0deg);
       }
-      20% {
+      /* 탭 - 부드럽게 눌림 */
+      5% {
+        transform: translate(-50%, -50%) scale(0.97) rotateY(0deg);
+      }
+      12% {
+        transform: translate(-50%, -50%) scale(0.93) rotateY(0deg);
+      }
+      18% {
         transform: translate(-50%, -50%) scale(0.92) rotateY(0deg);
       }
-      40% {
-        transform: translate(-50%, -50%) scale(0.95) rotateY(60deg);
+      /* 릴리즈 - 천천히 올라오면서 회전 시작 */
+      28% {
+        transform: translate(-50%, -50%) scale(0.93) rotateY(10deg);
       }
-      60% {
-        transform: translate(-50%, -50%) scale(0.97) rotateY(110deg);
+      38% {
+        transform: translate(-50%, -50%) scale(0.95) rotateY(40deg);
       }
-      80% {
-        transform: translate(-50%, -50%) scale(0.99) rotateY(150deg);
+      /* 회전 중 - 자연스럽게 복귀 */
+      50% {
+        transform: translate(-50%, -50%) scale(0.96) rotateY(80deg);
+      }
+      62% {
+        transform: translate(-50%, -50%) scale(0.97) rotateY(115deg);
+      }
+      75% {
+        transform: translate(-50%, -50%) scale(0.98) rotateY(145deg);
+      }
+      88% {
+        transform: translate(-50%, -50%) scale(0.99) rotateY(168deg);
       }
       100% {
         transform: translate(-50%, -50%) scale(1) rotateY(180deg);
@@ -373,8 +391,8 @@
     }
     
     .flip-card.press-flip {
-      animation: pressAndFlip 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-      transition: none !important; /* transition과 animation 충돌 방지 */
+      animation: pressAndFlip 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+      transition: none !important;
       z-index: 10;
     }
 
