@@ -365,7 +365,7 @@
     }
     
     .flip-card.press-flip {
-      animation: pressAndFlip 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+      animation: pressAndFlip 1s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
       z-index: 10;
     }
 
@@ -1203,8 +1203,8 @@
       const newTotal = totalMoney + earnedMoney;
       showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
       
-      // press-flip 애니메이션 완료 대기 (0.6s)
-      await new Promise(r => setTimeout(r, 650));
+      // press-flip 애니메이션 완료 대기 (1s)
+      await new Promise(r => setTimeout(r, 1000));
       
       // press-flip 애니메이션 완료 후 상태 고정
       currentCard.classList.remove('press-flip');
