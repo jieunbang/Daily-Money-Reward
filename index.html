@@ -318,6 +318,8 @@
       top: 50%;
       transform-style: preserve-3d;
       transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+      will-change: transform;
+      perspective: 1000px;
     }
 
     /* 맨 뒤 카드 (숨김) */
@@ -353,11 +355,14 @@
       0% {
         transform: translate(-50%, -50%) scale(1) rotateY(0deg);
       }
-      15% {
+      20% {
         transform: translate(-50%, -50%) scale(0.92) rotateY(0deg);
       }
-      50% {
-        transform: translate(-50%, -50%) scale(0.96) rotateY(90deg);
+      30% {
+        transform: translate(-50%, -50%) scale(0.94) rotateY(30deg);
+      }
+      60% {
+        transform: translate(-50%, -50%) scale(0.97) rotateY(120deg);
       }
       100% {
         transform: translate(-50%, -50%) scale(1) rotateY(180deg);
@@ -365,7 +370,8 @@
     }
     
     .flip-card.press-flip {
-      animation: pressAndFlip 1.5s ease-out forwards;
+      animation: pressAndFlip 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      transition: none !important; /* transition과 animation 충돌 방지 */
       z-index: 10;
     }
 
