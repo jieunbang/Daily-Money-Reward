@@ -1159,11 +1159,6 @@
 
       // 플립된 카드 2초 동안 화면에 표시
       await new Promise(r => setTimeout(r, 2000));
-      
-      // 적립 처리 (2초 후 토스트 & 금액 롤링 시작)
-      const earnedMoney = 20;
-      const newTotal = totalMoney + earnedMoney;
-      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
 
       // ★ 마지막 카드인 경우 empty state 미리 표시 (카드 뒤에 배치되어 아직 안보임)
       if (mileageCount <= 0 && currentScenario === 'success') {
@@ -1172,9 +1167,14 @@
         document.getElementById('emptyInfo').classList.add('show');
       }
 
-      // 2. 플립된 카드 위로 날아가며 사라짐
+      // 2. 플립된 카드 위로 날아가며 사라짐 + 동시에 금액 롤링 시작
       currentCard.style.transition = 'transform 0.5s ease-in';
       currentCard.style.transform = 'translate(-50%, -50%) translateY(-400px) rotateY(180deg)';
+      
+      // 적립 처리 (카드 올라갈 때 토스트 & 금액 롤링 시작)
+      const earnedMoney = 20;
+      const newTotal = totalMoney + earnedMoney;
+      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
 
       // 3. 다음 카드가 앞으로 나옴 (각도 0도)
       if (nextCard) {
