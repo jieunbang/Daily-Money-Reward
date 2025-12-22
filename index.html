@@ -206,6 +206,7 @@
     }
 
     .money-amount span {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       font-size: 26px;
       font-weight: 600;
       color: #fff;
@@ -343,6 +344,28 @@
     /* 플립 상태 */
     .flip-card.flipping {
       transform: translate(-50%, -50%) translateY(0) rotateY(180deg);
+      z-index: 10;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* 카드 탭+플립 통합 애니메이션 */
+    @keyframes pressAndFlip {
+      0% {
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+      }
+      15% {
+        transform: translate(-50%, -50%) scale(0.92) rotateY(0deg);
+      }
+      40% {
+        transform: translate(-50%, -50%) scale(1.05) rotateY(90deg);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1) rotateY(180deg);
+      }
+    }
+    
+    .flip-card.press-flip {
+      animation: pressAndFlip 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
       z-index: 10;
     }
 
@@ -524,6 +547,25 @@
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
+    }
+    
+    .card-info .btn-tertiary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .card-info .btn-tertiary:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
 
     /* Empty Info - 카드 없을 때 하단 정보 */
@@ -895,7 +937,7 @@
       <!-- Card Info Area (가변 패딩) -->
       <div class="card-info-area">
         <div class="card-info" id="cardInfo">
-          <div class="info-label">출석체크 리워드 | 11.04</div>
+          <div class="info-label" id="infoLabel">출석체크 리워드 | 11.04</div>
           <div class="time-badge" id="timeBadge">12:24:55 남음</div>
         </div>
         <div class="empty-info" id="emptyInfo">열기 가능한 리워드 카드가 없어요</div>
@@ -954,7 +996,11 @@
 
     // Timer
     let timeLeft = 12 * 3600 + 24 * 60 + 55;
-    setInterval(() => {
+    let timerInterval = null;
+    let isTimerStopped = false;
+    
+    timerInterval = setInterval(() => {
+      if (isTimerStopped) return; // 타이머 중지 시 업데이트 안함
       timeLeft--;
       if (timeLeft < 0) timeLeft = 24 * 3600;
       const h = Math.floor(timeLeft / 3600);
@@ -979,10 +1025,10 @@
       event.target.classList.add('active');
     }
 
-    function showToast(message, duration = 2500) {
+    function showToast(message, duration = 2500, onComplete = null) {
       toastMessage.textContent = message;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), duration);
+      setTimeout(() => { toast.classList.remove('show'); if (onComplete) onComplete(); }, duration);
     }
 
     function showModal() {
@@ -1030,6 +1076,10 @@
       } else {
         openOneBtn.style.display = 'flex';
       }
+      // 카드가 0장일 때는 "카드열기" 버튼 disabled
+      if (mileage <= 0) {
+        openAllBtn.disabled = true;
+      }
       specialCount = special;
       mileageCount = mileage;
       specialCountEl.textContent = special;
@@ -1037,8 +1087,41 @@
     }
 
     function updateTotalMoney(amount) {
-      totalMoney = amount;
-      totalMoneyEl.textContent = amount.toLocaleString() + '원';
+      const startValue = totalMoney;
+      const endValue = amount;
+      const duration = 1200; // 더 긴 애니메이션 시간
+      const startTime = performance.now();
+      
+      // easeOutQuart - 더 부드러운 감속
+      function easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+      }
+      
+      function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = easeOutQuart(progress);
+        
+        const currentValue = Math.round(startValue + (endValue - startValue) * easeProgress);
+        totalMoneyEl.textContent = currentValue.toLocaleString() + '원';
+        
+        // 숫자 변경 시 살짝 스케일 효과
+        if (progress < 0.3) {
+          const scale = 1 + (0.08 * (1 - progress / 0.3));
+          totalMoneyEl.style.transform = `scale(${scale})`;
+        } else {
+          totalMoneyEl.style.transform = 'scale(1)';
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          totalMoney = amount;
+          totalMoneyEl.style.transform = 'scale(1)';
+        }
+      }
+      
+      requestAnimationFrame(animate);
     }
 
     // 카드 1장 오픈 (플립 → 위로 사라짐 → 다음 카드 앞으로)
@@ -1047,13 +1130,13 @@
       
       isProcessing = true;
       openAllBtn.disabled = true;
-
+      
       const currentCard = document.getElementById('card' + currentCardIndex);
       const nextCard = currentCardIndex > 1 ? document.getElementById('card' + (currentCardIndex - 1)) : null;
       const waitingCard = currentCardIndex > 2 ? document.getElementById('card' + (currentCardIndex - 2)) : null;
       
       // 현재 카드의 이전 클래스 제거 및 초기 위치 설정
-      currentCard.classList.remove('move-front', 'move-back');
+      currentCard.classList.remove('move-front', 'move-back', 'press-flip');
       currentCard.style.cssText = '';
       
       // 맨 앞 카드 위치로 설정
@@ -1061,20 +1144,18 @@
       currentCard.style.zIndex = '3';
       currentCard.style.opacity = '1';
       
-      // 약간의 딜레이 후 플립 시작
-      await new Promise(r => setTimeout(r, 50));
+      // 1. 탭 애니메이션 (작아졌다가 커지면서 플립)
+      currentCard.classList.add('press-flip');
       
-      // 1. 현재 카드 플립
-      currentCard.style.transition = 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)';
+      // press-flip 애니메이션 완료 후 상태 고정
+      currentCard.classList.remove('press-flip');
       currentCard.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(180deg)';
       currentCard.style.zIndex = '10';
-      
-      await new Promise(r => setTimeout(r, 800));
 
       // 적립 처리
       const earnedMoney = 20;
-      updateTotalMoney(totalMoney + earnedMoney);
-      showToast(`${earnedMoney}원 적립완료! 🎉`);
+      const newTotal = totalMoney + earnedMoney;
+      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
 
       // 카드 수 감소 (일반카드 M만 감소)
       if (mileageCount > 0) {
@@ -1134,15 +1215,21 @@
         }
       }
 
-      openAllBtn.disabled = false;
+      // 카드가 남아있을 때만 버튼 활성화
+      if (mileageCount > 0) {
+        openAllBtn.disabled = false;
+      }
       isProcessing = false;
     }
 
     // 카드 한번에 열기 (모든 카드 합쳐서 뒤집기)
+    let pendingCardCount = 0; // 한번에 열기 시 저장할 카드 수
+    
     async function openAllAtOnce() {
       if (isProcessing || mileageCount <= 0) return;
       
       isProcessing = true;
+      pendingCardCount = currentCardIndex; // 현재 카드 수 저장
       
       // 카드열기 버튼 상태 변경: 텍스트 + 스피너
       openAllBtn.classList.add('loading');
@@ -1154,37 +1241,72 @@
       openOneBtn.style.opacity = '0.5';
       openOneBtn.style.pointerEvents = 'none';
 
-      // 1. 모든 카드를 0도로 합치기
+      // 1. 모든 카드를 0도로 합치기 (상태 초기화 후)
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
+        // 카드 상태 초기화
+        card.style.visibility = 'visible';
         card.style.opacity = '1';
+        card.style.transition = 'transform 0.4s ease-out';
+        card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(0deg)';
+        card.classList.remove('flipped', 'merge-flip');
         card.classList.add('merge');
       }
 
       await new Promise(r => setTimeout(r, 500));
 
-      // 2. 합쳐진 카드 한번에 플립
+      // 2. 합쳐진 카드 한번에 플립 (flipping 클래스 사용)
       for (let i = 1; i <= currentCardIndex; i++) {
         const card = document.getElementById('card' + i);
         card.classList.remove('merge');
-        card.classList.add('merge-flip');
+        card.style.transform = '';
+        card.style.transition = '';
+        card.style.zIndex = '10';
+        card.classList.add('flipping');
       }
 
       await new Promise(r => setTimeout(r, 800));
 
       // 적립 처리 (모든 일반카드 금액)
       const totalEarned = mileageCount * 20;
-      updateTotalMoney(totalMoney + totalEarned);
-      showToast(`${totalEarned}원 적립완료! 🎉`);
+      const newTotal = totalMoney + totalEarned;
+      showToast(`${totalEarned}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
 
       // 카드 수 0으로
       updateCounts(specialCount, 0);
 
-      await new Promise(r => setTimeout(r, 1500));
-
+      // 카드 한번에 열기 버튼 숨김
+      openOneBtn.style.display = 'none';
+      
+      // 버튼을 "확인"으로 변경하고 활성화
+      openAllBtn.classList.remove('loading');
+      openAllBtn.innerHTML = '확인';
+      openAllBtn.disabled = false;
+      openAllBtn.onclick = confirmAllCardsOpened;
+      
+      // 카드 정보 텍스트 변경: "총 N개 리워드 카드 열었어요"
+      document.getElementById('infoLabel').textContent = `총 ${pendingCardCount}개 리워드 카드 열었어요`;
+      
+      // 타이머 중지 및 "상세내역 보기" 버튼으로 변경
+      isTimerStopped = true;
+      const timeBadgeEl = document.getElementById('timeBadge');
+      timeBadgeEl.className = 'btn-tertiary';
+      timeBadgeEl.textContent = '상세내역 보기';
+      timeBadgeEl.onclick = () => { alert('상세내역 페이지로 이동'); };
+      
+      isProcessing = false;
+    }
+    
+    async function confirmAllCardsOpened() {
+      if (isProcessing) return;
+      isProcessing = true;
+      
+      openAllBtn.disabled = true;
+      const openOneBtn = document.getElementById('openOneBtn');
+      
       if (currentScenario === 'success') {
         // 성공: 플립된 카드 위로 사라짐
-        for (let i = 1; i <= currentCardIndex; i++) {
+        for (let i = 1; i <= pendingCardCount; i++) {
           const card = document.getElementById('card' + i);
           card.classList.remove('merge-flip');
           card.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(180deg)';
@@ -1199,7 +1321,7 @@
         await new Promise(r => setTimeout(r, 50));
         
         // 위로 날아가는 애니메이션 (화면 밖으로)
-        for (let i = 1; i <= currentCardIndex; i++) {
+        for (let i = 1; i <= pendingCardCount; i++) {
           const card = document.getElementById('card' + i);
           card.style.transition = 'transform 0.6s ease-in';
           card.style.transform = 'translate(-50%, -50%) translateY(-600px) rotateY(180deg)';
@@ -1208,24 +1330,24 @@
         await new Promise(r => setTimeout(r, 700));
         
         // 애니메이션 후 완전히 숨김
-        for (let i = 1; i <= currentCardIndex; i++) {
+        for (let i = 1; i <= pendingCardCount; i++) {
           const card = document.getElementById('card' + i);
           card.style.visibility = 'hidden';
         }
 
         // 완료 처리
-        openAllBtn.classList.remove('loading');
         openAllBtn.innerHTML = '카드열기';
+        openAllBtn.onclick = openAllCards; // 원래 함수로 복원
         // 카드 스택 숨김
         cardStack.style.display = 'none';
         openAllBtn.disabled = true;
         
-        // 카드 한번에 열기 버튼 숨김
+        // 카드 한번에 열기 버튼 숨김 유지
         openOneBtn.style.display = 'none';
       } else {
         // 일부 실패: 플립된 상태 그대로 유지 + 알럿 제공
-        openAllBtn.classList.remove('loading');
         openAllBtn.innerHTML = '카드열기';
+        openAllBtn.onclick = openAllCards; // 원래 함수로 복원
         
         // 카드 수 일부 남김
         updateCounts(specialCount, 2);
@@ -1235,10 +1357,11 @@
         
         // 플립된 상태 유지한 채로 알럿 표시 (merge-flip 클래스 유지됨)
         showModal();
+        
+        openOneBtn.style.opacity = '1';
+        openOneBtn.style.pointerEvents = 'auto';
       }
 
-      openOneBtn.style.opacity = '1';
-      openOneBtn.style.pointerEvents = 'auto';
       isProcessing = false;
     }
 
