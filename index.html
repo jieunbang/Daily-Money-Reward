@@ -1167,14 +1167,15 @@
         document.getElementById('emptyInfo').classList.add('show');
       }
 
-      // 2. 플립된 카드 위로 날아가며 사라짐 + 동시에 금액 롤링 시작
+      // 2. 플립된 카드 위로 날아가며 사라짐
       currentCard.style.transition = 'transform 0.5s ease-in';
       currentCard.style.transform = 'translate(-50%, -50%) translateY(-400px) rotateY(180deg)';
       
-      // 적립 처리 (카드 올라갈 때 토스트 & 금액 롤링 시작)
+      // 적립 처리 - 카드 올라가는 순간 금액 롤링 바로 시작
       const earnedMoney = 20;
       const newTotal = totalMoney + earnedMoney;
-      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
+      updateTotalMoney(newTotal); // 금액 롤링 즉시 시작
+      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500);
 
       // 3. 다음 카드가 앞으로 나옴 (각도 0도)
       if (nextCard) {
