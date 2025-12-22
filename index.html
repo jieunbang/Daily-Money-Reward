@@ -1284,6 +1284,11 @@
       isProcessing = true;
       pendingCardCount = currentCardIndex; // 현재 카드 수 저장
       
+      // 적립 처리 - 버튼 클릭 즉시 토스트 표시
+      const totalEarned = mileageCount * 20;
+      const newTotal = totalMoney + totalEarned;
+      showToast(`${totalEarned}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
+
       // 카드열기 버튼 상태 변경: 텍스트 + 스피너
       openAllBtn.classList.add('loading');
       openAllBtn.innerHTML = '카드를 한번에 열고있어요 <span class="spinner"></span>';
@@ -1317,11 +1322,6 @@
 
       // 1.5초 동안 보더 라이트 애니메이션
       await new Promise(r => setTimeout(r, 1500));
-
-      // 적립 처리 - 플립 시작과 동시에 토스트 표시
-      const totalEarned = mileageCount * 20;
-      const newTotal = totalMoney + totalEarned;
-      showToast(`${totalEarned}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
 
       // 2. 합쳐진 카드 한번에 플립 (보더 라이트 제거)
       for (let i = 1; i <= currentCardIndex; i++) {
