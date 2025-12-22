@@ -1198,6 +1198,14 @@
       // 1. 탭 애니메이션 (작아졌다가 커지면서 플립)
       currentCard.classList.add('press-flip');
       
+      // 적립 처리 - 카드 플립 시작과 동시에 토스트 표시
+      const earnedMoney = 20;
+      const newTotal = totalMoney + earnedMoney;
+      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
+      
+      // press-flip 애니메이션 완료 대기 (0.6s)
+      await new Promise(r => setTimeout(r, 650));
+      
       // press-flip 애니메이션 완료 후 상태 고정
       currentCard.classList.remove('press-flip');
       currentCard.style.transform = 'translate(-50%, -50%) translateY(0) rotateY(180deg)';
@@ -1221,12 +1229,6 @@
       // 2. 플립된 카드 위로 날아가며 사라짐
       currentCard.style.transition = 'transform 0.5s ease-in';
       currentCard.style.transform = 'translate(-50%, -50%) translateY(-400px) rotateY(180deg)';
-      
-      // 적립 처리 - 카드 올라가는 순간 금액 롤링 바로 시작
-      const earnedMoney = 20;
-      const newTotal = totalMoney + earnedMoney;
-      updateTotalMoney(newTotal); // 금액 롤링 즉시 시작
-      showToast(`${earnedMoney}원 적립완료! 🎉`, 1500);
 
       // 3. 다음 카드가 앞으로 나옴 (각도 0도)
       if (nextCard) {
