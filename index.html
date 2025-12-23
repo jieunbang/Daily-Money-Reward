@@ -355,28 +355,22 @@
       0% {
         transform: translate(-50%, -50%) scale(1) rotateY(0deg);
       }
-      /* 탭 - 빠르게 눌림 */
-      8% {
-        transform: translate(-50%, -50%) scale(0.96) rotateY(0deg);
+      /* 눌림 */
+      15% {
+        transform: translate(-50%, -50%) scale(0.94) rotateY(0deg);
       }
-      /* 눌린 상태 잠깐 유지 */
-      12% {
-        transform: translate(-50%, -50%) scale(0.96) rotateY(0deg);
+      /* 눌린 상태 유지하면서 회전 시작 */
+      30% {
+        transform: translate(-50%, -50%) scale(0.94) rotateY(45deg);
       }
-      /* 회전 시작하면서 복귀 */
-      25% {
-        transform: translate(-50%, -50%) scale(0.98) rotateY(30deg);
-      }
-      50% {
-        transform: translate(-50%, -50%) scale(1) rotateY(90deg);
-      }
+      /* 회전하면서 서서히 복귀 */
       100% {
         transform: translate(-50%, -50%) scale(1) rotateY(180deg);
       }
     }
     
     .flip-card.press-flip {
-      animation: pressAndFlip 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation: pressAndFlip 1.5s ease-in-out forwards;
       transition: none !important;
       z-index: 10;
     }
@@ -1215,8 +1209,8 @@
       const newTotal = totalMoney + earnedMoney;
       showToast(`${earnedMoney}원 적립완료! 🎉`, 1500, () => updateTotalMoney(newTotal));
       
-      // press-flip 애니메이션 완료 대기 (1.2s)
-      await new Promise(r => setTimeout(r, 1200));
+      // press-flip 애니메이션 완료 대기 (1.5s)
+      await new Promise(r => setTimeout(r, 1500));
       
       // press-flip 애니메이션 완료 후 상태 고정
       currentCard.classList.remove('press-flip');
